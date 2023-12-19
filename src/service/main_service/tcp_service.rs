@@ -1,10 +1,9 @@
 use std::io;
 use std::net::SocketAddr;
-use std::sync::Arc;
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::OwnedReadHalf;
-use tokio::net::{TcpListener, UdpSocket};
+use tokio::net::TcpListener;
 use tokio::sync::mpsc::{channel, Sender};
 
 use crate::cipher::{Aes256GcmCipher, RsaCipher};

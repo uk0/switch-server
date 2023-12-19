@@ -8,7 +8,6 @@ use packet::ip::ipv4;
 use packet::ip::ipv4::packet::IpV4Packet;
 use parking_lot::RwLock;
 use protobuf::Message;
-use tokio::net::UdpSocket;
 use tokio::sync::mpsc::Sender;
 
 use crate::cipher::Aes256GcmCipher;
