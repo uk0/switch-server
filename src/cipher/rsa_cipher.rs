@@ -89,7 +89,7 @@ impl RsaCipher {
         })
     }
     pub fn finger(&self) -> io::Result<String> {
-        match rsa::pkcs8::SubjectPublicKeyInfo::from_der(&self.inner.public_key_der) {
+        match rsa::pkcs8::SubjectPublicKeyInfoRef::from_der(&self.inner.public_key_der) {
             Ok(spki) => match spki.fingerprint_base64() {
                 Ok(finger) => Ok(finger),
                 Err(e) => Err(io::Error::new(
@@ -117,7 +117,7 @@ impl RsaCipher {
         match self
             .inner
             .private_key
-            .decrypt(rsa::PaddingScheme::PKCS1v15Encrypt, net_packet.payload())
+            .decrypt(rsa::pkcs1v15::Pkcs1v15Encrypt, net_packet.payload())
         {
             Ok(rs) => {
                 let mut nonce_raw = [0; 12];
