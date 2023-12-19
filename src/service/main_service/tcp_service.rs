@@ -10,13 +10,13 @@ use tokio::sync::mpsc::{channel, Sender};
 use crate::cipher::{Aes256GcmCipher, RsaCipher};
 use crate::service::main_service::common::handle;
 use crate::service::main_service::{
-    Context, PeerDeviceStatus, DEVICE_ADDRESS, TCP_AES, VIRTUAL_NETWORK,
+    Context, PeerDeviceStatus, UdpSocketBox, DEVICE_ADDRESS, TCP_AES, VIRTUAL_NETWORK,
 };
 use crate::ConfigInfo;
 
 pub async fn start_tcp(
     tcp: TcpListener,
-    main_udp: Arc<UdpSocket>,
+    main_udp: UdpSocketBox,
     config: ConfigInfo,
     rsa_cipher: Option<RsaCipher>,
 ) {
@@ -94,7 +94,7 @@ async fn tcp_handle(
     mut read: OwnedReadHalf,
     addr: SocketAddr,
     sender: Sender<Vec<u8>>,
-    main_udp: Arc<UdpSocket>,
+    main_udp: UdpSocketBox,
 ) -> io::Result<()> {
     let mut head = [0; 4];
     let mut buf = [0; 10240];

@@ -23,7 +23,7 @@ use crate::protocol::{
 };
 use crate::service::igmp_server::Multicast;
 use crate::service::main_service::{
-    Context, DeviceInfo, PeerDeviceStatus, PeerLink, VirtualNetwork, DEVICE_ADDRESS,
+    Context, DeviceInfo, PeerDeviceStatus, PeerLink, UdpSocketBox, VirtualNetwork, DEVICE_ADDRESS,
     DEVICE_ID_SESSION, TCP_AES, UDP_AES, UDP_SESSION, VIRTUAL_NETWORK,
 };
 use crate::ConfigInfo;
@@ -202,7 +202,7 @@ fn register0(
 async fn register(
     context: &mut Option<Context>,
     aes_gcm_cipher: &Option<Aes256GcmCipher>,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     net_packet: NetPacket<&mut [u8]>,
     config: &ConfigInfo,
     addr: SocketAddr,
@@ -260,7 +260,7 @@ async fn register(
 }
 
 async fn broadcast(
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     context: &Context,
     buf: &[u8],
     multicast_info: Option<&RwLock<Multicast>>,
@@ -305,7 +305,7 @@ async fn broadcast(
 }
 
 async fn broadcast_igmp(
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     context: &Context,
     net_packet: NetPacket<&mut [u8]>,
 ) -> crate::error::Result<()> {
@@ -359,7 +359,7 @@ async fn broadcast_igmp(
 
 /// 选择性转发广播/组播，并且去除尾部
 async fn change_broadcast(
-    udp: &UdpSocket,
+    udp: &UdpSocketBox,
     context: &Context,
     broadcast_addr: Ipv4Addr,
     destination: Ipv4Addr,
@@ -380,7 +380,7 @@ async fn change_broadcast(
 
 async fn request_addr(
     aes_gcm_cipher: &Option<Aes256GcmCipher>,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     addr: SocketAddr,
     net_packet: NetPacket<&mut [u8]>,
     sender: Option<&Sender<Vec<u8>>>,
@@ -409,7 +409,7 @@ async fn server_packet_pre_handle(
     context: &mut Option<Context>,
     rsa_cipher: &Option<RsaCipher>,
     aes_gcm_cipher: &mut Option<Aes256GcmCipher>,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     net_packet: NetPacket<&mut [u8]>,
     config: &ConfigInfo,
     addr: SocketAddr,
@@ -509,7 +509,7 @@ async fn server_packet_handle(
     rsa_cipher: &Option<RsaCipher>,
     aes_gcm_cipher: &mut Option<Aes256GcmCipher>,
     context: &mut Context,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     mut net_packet: NetPacket<&mut [u8]>,
     config: &ConfigInfo,
     addr: SocketAddr,
@@ -646,7 +646,7 @@ async fn server_packet_handle(
 
 async fn transmit_handle(
     context: &Context,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     mut net_packet: NetPacket<&mut [u8]>,
     config: &ConfigInfo,
 ) -> crate::error::Result<()> {
@@ -723,7 +723,7 @@ async fn transmit_handle(
 async fn reply_vec(
     aes_gcm_cipher: &Option<Aes256GcmCipher>,
     sender: &Option<&Sender<Vec<u8>>>,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     addr: SocketAddr,
     mut buf: Vec<u8>,
 ) -> crate::error::Result<()> {
@@ -749,7 +749,7 @@ async fn reply_vec(
 async fn reply_buf(
     aes_gcm_cipher: &Option<Aes256GcmCipher>,
     sender: &Option<&Sender<Vec<u8>>>,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     addr: SocketAddr,
     mut net_packet: NetPacket<&mut [u8]>,
 ) -> crate::error::Result<()> {
@@ -770,7 +770,7 @@ pub async fn handle(
     rsa_cipher: &Option<RsaCipher>,
     aes_gcm_cipher: &mut Option<Aes256GcmCipher>,
     context: &mut Option<Context>,
-    main_udp: &UdpSocket,
+    main_udp: &UdpSocketBox,
     buf: &mut [u8],
     addr: SocketAddr,
     config: &ConfigInfo,

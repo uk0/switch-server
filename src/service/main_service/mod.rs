@@ -1,11 +1,13 @@
-use dashmap::DashMap;
 use std::collections::HashMap;
+use std::io;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 use std::time::Duration;
 
+use dashmap::DashMap;
 use moka::sync::Cache;
 use parking_lot::RwLock;
+use tokio::net::UdpSocket;
 use tokio::sync::mpsc::Sender;
 
 pub use tcp_service::start_tcp;
@@ -130,5 +132,31 @@ impl From<u8> for PeerDeviceStatus {
             0 => PeerDeviceStatus::Online,
             _ => PeerDeviceStatus::Offline,
         }
+    }
+}
+#[derive(Clone)]
+pub struct UdpSocketBox {
+    udp_v4: Option<Arc<UdpSocket>>,
+    udp_v6: Option<Arc<UdpSocket>>,
+}
+
+impl UdpSocketBox {
+    pub fn new(udp_v4: Option<Arc<UdpSocket>>, udp_v6: Option<Arc<UdpSocket>>) -> Self {
+        Self { udp_v4, udp_v6 }
+    }
+    pub async fn send_to(&self, buf: &[u8], target: SocketAddr) -> io::Result<usize> {
+        match target {
+            SocketAddr::V4(_) => {
+                if let Some(udp) = &self.udp_v4 {
+                    return udp.send_to(buf, target).await;
+                }
+            }
+            SocketAddr::V6(_) => {
+                if let Some(udp) = &self.udp_v6 {
+                    return udp.send_to(buf, target).await;
+                }
+            }
+        }
+        Err(std::io::Error::from(std::io::ErrorKind::NotFound))
     }
 }

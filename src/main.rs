@@ -184,27 +184,61 @@ async fn main() {
         }
     };
     log::info!("config:{:?}", config);
-    let udp = match UdpSocket::bind(format!("0.0.0.0:{}", port)).await {
+    let udp_ipv4 = match UdpSocket::bind(format!("0.0.0.0:{}", port)).await {
         Ok(udp) => Arc::new(udp),
         Err(e) => {
-            log::warn!("udp启动失败:{:?}", e);
-            panic!("udp启动失败:{}", e);
+            log::warn!("udp_ipv4启动失败:{:?}", e);
+            panic!("udp_ipv4启动失败:{}", e);
         }
     };
-    log::info!("监听udp端口: {:?}", udp.local_addr().unwrap());
-    println!("监听udp端口: {:?}", udp.local_addr().unwrap());
-    let tcp = match TcpListener::bind(format!("0.0.0.0:{}", port)).await {
+    log::info!("监听udp ipv4地址: {:?}", udp_ipv4.local_addr().unwrap());
+    println!("监听udp ipv4地址: {:?}", udp_ipv4.local_addr().unwrap());
+    let udp_ipv6 = match UdpSocket::bind(format!("[::]:{}", port)).await {
+        Ok(udp) => Arc::new(udp),
+        Err(e) => {
+            log::warn!("udp_ipv6启动失败:{:?}", e);
+            panic!("udp_ipv6启动失败:{}", e);
+        }
+    };
+    log::info!("监听udp ipv6地址: {:?}", udp_ipv6.local_addr().unwrap());
+    println!("监听udp ipv6地址: {:?}", udp_ipv6.local_addr().unwrap());
+    let tcp_ipv4 = match TcpListener::bind(format!("0.0.0.0:{}", port)).await {
         Ok(tcp) => tcp,
         Err(e) => {
             log::warn!("tcp启动失败:{:?}", e);
             panic!("tcp启动失败:{:?}", e);
         }
     };
-    log::info!("监听tcp端口: {:?}", tcp.local_addr().unwrap());
-    println!("监听tcp端口: {:?}", tcp.local_addr().unwrap());
+    log::info!("监听tcp ipv4地址: {:?}", tcp_ipv4.local_addr().unwrap());
+    println!("监听tcp ipv4地址: {:?}", tcp_ipv4.local_addr().unwrap());
+    let tcp_ipv6 = match TcpListener::bind(format!("[::]:{}", port)).await {
+        Ok(tcp) => tcp,
+        Err(e) => {
+            log::warn!("tcp_ipv6启动失败:{:?}", e);
+            panic!("tcp_ipv6启动失败:{:?}", e);
+        }
+    };
+    log::info!("监听tcp ipv6地址: {:?}", tcp_ipv6.local_addr().unwrap());
+    println!("监听tcp ipv6地址: {:?}", tcp_ipv6.local_addr().unwrap());
     let config = config.clone();
-    let main_udp = udp.clone();
-    let tcp_config = config.clone();
-    tokio::spawn(start_tcp(tcp, main_udp, tcp_config, rsa.clone()));
-    start_udp(udp, config, rsa.clone()).await;
+    let main_udp = service::UdpSocketBox::new(Some(udp_ipv4.clone()), Some(udp_ipv6.clone()));
+    tokio::spawn(start_tcp(
+        tcp_ipv4,
+        main_udp.clone(),
+        config.clone(),
+        rsa.clone(),
+    ));
+    tokio::spawn(start_tcp(
+        tcp_ipv6,
+        main_udp.clone(),
+        config.clone(),
+        rsa.clone(),
+    ));
+    tokio::spawn(start_udp(
+        udp_ipv4,
+        main_udp.clone(),
+        config.clone(),
+        rsa.clone(),
+    ));
+    start_udp(udp_ipv6, main_udp, config, rsa.clone()).await;
 }

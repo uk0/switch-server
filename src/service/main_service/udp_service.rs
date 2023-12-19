@@ -5,16 +5,18 @@ use tokio::net::UdpSocket;
 
 use crate::service::main_service::common::handle;
 use crate::service::main_service::{UDP_AES, UDP_SESSION};
+use crate::service::UdpSocketBox;
 use crate::ConfigInfo;
 
 pub async fn start_udp(
-    main_udp: Arc<UdpSocket>,
+    main_udp_recv: Arc<UdpSocket>,
+    main_udp: UdpSocketBox,
     config: ConfigInfo,
     rsa_cipher: Option<RsaCipher>,
 ) {
     loop {
         let mut buf = vec![0u8; 10240];
-        match main_udp.recv_from(&mut buf).await {
+        match main_udp_recv.recv_from(&mut buf).await {
             Ok((len, addr)) => {
                 let main_udp = main_udp.clone();
                 let config = config.clone();
