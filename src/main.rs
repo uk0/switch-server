@@ -193,7 +193,12 @@ async fn main() {
     };
     log::info!("监听udp ipv4地址: {:?}", udp_ipv4.local_addr().unwrap());
     println!("监听udp ipv4地址: {:?}", udp_ipv4.local_addr().unwrap());
-    let udp_ipv6 = match UdpSocket::bind(format!("[::]:{}", port)).await {
+
+    let socket = socket2::Socket::new(socket2::Domain::IPV6, socket2::Type::DGRAM, None).unwrap();
+    socket.set_only_v6(true).unwrap();
+    let address: std::net::SocketAddr = format!("[::]:{}", port).parse().unwrap();
+    socket.bind(&address.into()).unwrap();
+    let udp_ipv6 = match UdpSocket::from_std(socket.into()) {
         Ok(udp) => Arc::new(udp),
         Err(e) => {
             log::warn!("udp_ipv6启动失败:{:?}", e);
@@ -211,7 +216,11 @@ async fn main() {
     };
     log::info!("监听tcp ipv4地址: {:?}", tcp_ipv4.local_addr().unwrap());
     println!("监听tcp ipv4地址: {:?}", tcp_ipv4.local_addr().unwrap());
-    let tcp_ipv6 = match TcpListener::bind(format!("[::]:{}", port)).await {
+    let socket = socket2::Socket::new(socket2::Domain::IPV6, socket2::Type::STREAM, None).unwrap();
+    socket.set_only_v6(true).unwrap();
+    let address: std::net::SocketAddr = format!("[::]:{}", port).parse().unwrap();
+    socket.bind(&address.into()).unwrap();
+    let tcp_ipv6 = match TcpListener::from_std(socket.into()) {
         Ok(tcp) => tcp,
         Err(e) => {
             log::warn!("tcp_ipv6启动失败:{:?}", e);

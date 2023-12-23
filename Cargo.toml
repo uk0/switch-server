@@ -14,9 +14,9 @@ dirs = "5.0.1"
 crossbeam = "0.8.2"
 parking_lot = "0.12.1"
 dashmap = "5.5.1"
-
-rsa = { version = "0.9.6", features = [] }
-spki = { version = "0.7.2", features = ["fingerprint", "alloc","base64"] }
+socket2 = { version = "0.5.5", features = ["all"] }
+rsa = { version = "0.7.2", features = [] }
+spki = { version = "0.6.0", features = ["fingerprint", "alloc"] }
 aes-gcm = { version = "0.10.2", optional = true }
 ring = { version = "0.17.7", optional = true }
 rand = "0.8.5"
